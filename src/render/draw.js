@@ -6,7 +6,8 @@
 import rough from 'roughjs';
 import { whenImagesReady } from './assets';
 import { SEASONAL_PALETTES, TILE_SIZE } from '../game/constants';
-import { drawSquirrel, drawTree, drawCollectible, drawBackground, drawNest } from './sprites';
+import { drawSquirrel, drawTree, drawCollectible, drawBackground, drawNest, drawGround } from './sprites';
+import { getWorldPickups } from '../game/systems';
 import { useStore } from '../state/useStore';
 
 let roughCanvas = null;
@@ -58,27 +59,16 @@ function drawParallaxBackgrounds(ctx, rc, camera, time, palette, canvas) {
 }
 
 function drawWorld(ctx, rc, camera, time, palette, canvas) {
-  // This would draw the tilemap
-  // For now, draw a simple ground
-  const groundY = canvas.height - 100;
-  
-  rc.rectangle(
-    -camera.x,
-    groundY - camera.y,
-    canvas.width + 2000,
-    100,
-    {
-      fill: palette.primary,
-      stroke: palette.secondary,
-      strokeWidth: 2,
-      roughness: 1.5
-    }
-  );
+  // Ground line
+  const groundY = 500; // baseline used by physics
 
-  // Draw some trees
+  // Draw tiled ground from tilesheet
+  drawGround(ctx, groundY, camera.x, canvas.width, 0.6);
+
+  // Trees
   for (let i = 0; i < 10; i++) {
     const treeX = i * 200 - camera.x;
-    const treeY = groundY - 150 - camera.y;
+    const treeY = groundY - 10 - camera.y;
     
     if (camera.isVisible(treeX, treeY, 100)) {
       drawTree(ctx, rc, treeX, treeY, 0.4);
@@ -100,6 +90,17 @@ function drawEntities(ctx, rc, camera, time, palette, player) {
     });
   }
   
+  // Draw world pickups
+  const pickups = getWorldPickups();
+  for (let i = 0; i < pickups.length; i++) {
+    const p = pickups[i];
+    const px = p.x - camera.x;
+    const py = p.y - camera.y + Math.sin(p.bob) * 3; // bobbing
+    if (camera.isVisible(p.x, p.y, 60)) {
+      drawCollectible(ctx, px, py, p.kind, 0.18);
+    }
+  }
+
   // Draw nest with upgrade level
   const nestX = 100 - camera.x;
   const nestY = 500 - camera.y; // Position at ground level

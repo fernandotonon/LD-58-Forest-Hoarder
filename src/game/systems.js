@@ -12,7 +12,9 @@ import {
   DASH_SPEED,
   STAMINA_DASH_COST,
   STAMINA_RECOVERY,
-  CALORIES_PER_DAY_WINTER
+  CALORIES_PER_DAY_WINTER,
+  CANVAS_WIDTH,
+  WORLD_WIDTH
 } from './constants';
 
 export function updateGame(deltaTime, { input, camera, physics, time, rng, canvas }) {
@@ -45,6 +47,10 @@ export function updateGame(deltaTime, { input, camera, physics, time, rng, canva
   
   // Clear just pressed states after processing
   input.clearJustPressed();
+
+  // Spawn and update collectibles
+  updateCollectibles(deltaTime, rng);
+  handlePickupCollisions(addToPantry, addNotification);
   
   // Update camera
   camera.follow(player, deltaTime);
@@ -133,9 +139,10 @@ function updatePlayerMovement(deltaTime, input, physics, player, updatePlayer, s
   }
   
   
-  // Keep player on screen initially
+  // Clamp to world bounds
+  const maxX = WORLD_WIDTH * CANVAS_WIDTH;
   if (x < 0) x = 0;
-  if (x > 800) x = 800;
+  if (x > maxX) x = maxX;
   
   // Update player state
   updatePlayer({
@@ -190,4 +197,55 @@ function checkWinLoseConditions(time, showWinLose) {
       return;
     }
   }
+}
+
+// --- Collectibles world spawning and pickup ---
+const worldState = {
+  pickups: [] // {id, x, y, kind, bob}
+};
+
+const PICKUP_KINDS = ['acorn', 'berry', 'cone', 'leaf'];
+
+function updateCollectibles(deltaTime, rng) {
+  // Keep a small number of pickups active near the play area
+  const targetCount = 8;
+  if (worldState.pickups.length < targetCount) {
+    const toSpawn = targetCount - worldState.pickups.length;
+    for (let i = 0; i < toSpawn; i++) {
+      const kind = PICKUP_KINDS[Math.floor(Math.random() * PICKUP_KINDS.length)];
+      const x = 160 + Math.random() * 1200; // spread across first screens
+      const y = 468 + Math.random() * 8; // near ground (500 minus half sprite)
+      worldState.pickups.push({ id: Date.now() + Math.random(), x, y, kind, bob: Math.random() * Math.PI * 2 });
+    }
+  }
+
+  // Bob animation
+  worldState.pickups.forEach(p => {
+    p.bob += deltaTime * 2;
+  });
+}
+
+function handlePickupCollisions(addToPantry, addNotification) {
+  const { player } = useStore.getState();
+  const px = player.x;
+  const py = player.y;
+  const pw = 24;
+  const ph = 32;
+
+  for (let i = worldState.pickups.length - 1; i >= 0; i--) {
+    const p = worldState.pickups[i];
+    // simple AABB overlap with small radius
+    const dx = Math.abs((px) - (p.x));
+    const dy = Math.abs((py) - (p.y));
+    if (dx < 20 && dy < 24) {
+      // collect
+      addToPantry(p.kind, 1);
+      addNotification(`+1 ${p.kind}`, 'success');
+      worldState.pickups.splice(i, 1);
+    }
+  }
+}
+
+export function getWorldPickups() {
+  return worldState.pickups;
 }

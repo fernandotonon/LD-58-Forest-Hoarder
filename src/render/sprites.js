@@ -147,14 +147,24 @@ export function drawCollectible(ctx, x, y, kind='acorn', scale=0.25) {
 export function drawTree(ctx, rc, x, y, scale=0.4) {
   const img = images.tiles;
   if (img && img.width) {
-    // draw one of the trees (right side of sheet) — approximate crop
-    const sx = Math.floor(img.width*0.64), sy = Math.floor(img.height*0.12);
-    const sw = Math.floor(img.width*0.30), sh = Math.floor(img.height*0.62);
-    const dw = Math.floor(sw*scale), dh = Math.floor(sh*scale);
-    
-    // Use transparency processing
+    // Tighter crop for tree region on tiles.png (normalized coordinates)
+    // Tuned to include only the canopy + trunk without neighboring tiles
+    const nx = 0.71, ny = 0.01 , nw = 0.3, nh = 0.6;
+    const sx = Math.floor(img.width * nx);
+    const sy = Math.floor(img.height * ny);
+    const sw = Math.floor(img.width * nw);
+    const sh = Math.floor(img.height * nh);
+    const dw = Math.floor(sw * scale);
+    const dh = Math.floor(sh * scale);
+
+    // Use transparency processing and anchor base at y (tree sits on ground)
     const transparentImg = makeTransparent(img);
-    ctx.drawImage(transparentImg, sx, sy, sw, sh, Math.floor(x - dw/2), Math.floor(y - dh), dw, dh);
+    ctx.drawImage(
+      transparentImg,
+      sx, sy, sw, sh,
+      Math.floor(x - dw / 2), Math.floor(y - dh),
+      dw, dh
+    );
     return;
   }
   // fallback procedural bushy tree
@@ -229,4 +239,34 @@ export function drawNest(ctx, rc, x, y, level=0, scale=0.5) {
 export function drawBackground(ctx, width, height) {
   // simple parchment backdrop if needed (actual season tint handled elsewhere)
   ctx.clearRect(0,0,width,height);
+}
+
+// === TILED GROUND FROM tiles.png ===
+// Draws a repeating ground tile across the screen at a given baseline y
+export function drawGround(ctx, y, cameraX, canvasWidth, scale=0.5) {
+  const img = images.tiles;
+  if (!img || !img.width) return;
+
+  // Approximate crop for a dirt/ground tile region in tiles.png (normalized)
+  // Adjust these if needed to better match your sheet
+  const nx = 0.05, ny = 0.0, nw = 0.21, nh = 0.18;
+  const sx = Math.floor(img.width * nx);
+  const sy = Math.floor(img.height * ny);
+  const sw = Math.floor(img.width * nw);
+  const sh = Math.floor(img.height * nh);
+
+  const transparentImg = makeTransparent(img);
+  const dw = Math.floor(sw * scale);
+  const dh = Math.floor(sh * scale);
+
+  // Start tiling a bit before the screen to avoid gaps during scroll
+  const startX = Math.floor((cameraX / dw)) * dw - dw * 2;
+  const endX = cameraX + canvasWidth + dw * 2;
+
+  for (let dx = startX; dx < endX; dx += dw) {
+    // anchor so top of tile is a bit above baseline (y is ground baseline)
+    const screenX = Math.floor(dx - cameraX);
+    const screenY = Math.floor(y - dh);
+    ctx.drawImage(transparentImg, sx, sy, sw, sh, screenX, screenY, dw, dh);
+  }
 }
