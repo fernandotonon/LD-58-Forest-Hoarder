@@ -38,31 +38,30 @@ export const INSULATION_BONUS = 2; // Reduces warmth drain
 // Item properties
 export const ITEM_CALORIES = {
   acorn: 2,
-  hazelnut: 2,
   berry: 1,
-  mushroom: 1,
-  preserved: 3
+  pine: 2,
+  leaf: 0,
 };
 
 export const ITEM_WEIGHT = {
   acorn: 1,
-  hazelnut: 1,
   berry: 0.5,
-  mushroom: 0.5,
+  pine: 1,
   leaf: 0.2,
   twig: 0.3,
-  preserved: 1
 };
 
 export const ITEM_STACK_SIZE = {
   acorn: 10,
-  hazelnut: 10,
   berry: 20,
-  mushroom: 15,
+  pine: 10,
   leaf: 50,
   twig: 30,
   preserved: 10
 };
+
+// Core collectible kinds with sprite coverage
+export const ITEM_KINDS = ['acorn', 'berry', 'pine', 'leaf'];
 
 // Tile types
 export const TILE_TYPES = {

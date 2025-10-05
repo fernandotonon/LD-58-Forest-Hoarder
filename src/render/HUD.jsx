@@ -46,7 +46,13 @@ export default function HUD() {
             style={{ width: `${getStaminaPercent()}%` }}
           />
         </div>
-        <div>Pantry: {getPantryTotal()}</div>
+        <div style={{ marginTop: 6 }}>Pantry:</div>
+        <div style={{ fontSize: 12, lineHeight: 1.1 }}>
+          {Object.keys(nest.pantry).length === 0 && <div style={{opacity:0.8}}>empty</div>}
+          {Object.entries(nest.pantry).map(([k,v]) => (
+            <div key={k}>{k}: {v}</div>
+          ))}
+        </div>
       </div>
 
       {/* Bottom left - Inventory */}
@@ -116,10 +122,8 @@ function ItemIcon({ item }) {
     switch (item) {
       case 'acorn': index = 0; break;
       case 'berry': index = 1; break;
-      case 'cone': index = 2; break;
+      case 'pine': index = 2; break;
       case 'leaf': index = 3; break;
-      case 'hazelnut': index = 0; break;
-      case 'mushroom': index = 1; break;
       default: index = 0;
     }
     const gridCols = 2;

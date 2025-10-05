@@ -108,8 +108,9 @@ function drawEntities(ctx, rc, camera, time, palette, player) {
   if (camera.isVisible(100, 500, 100)) {
     // Calculate nest upgrade level based on collected items
     const { nest } = useStore.getState();
-    const totalItems = Object.values(nest.pantry).reduce((total, count) => total + count, 0);
-    const nestLevel = Math.min(3, Math.floor(totalItems / 5)); // Upgrade every 5 items
+    // Level reflects upgrades: sum upgrade levels capped to 3
+    const upgradeSum = Object.values(nest.upgrades || {}).reduce((s, v) => s + (v || 0), 0);
+    const nestLevel = Math.max(0, Math.min(3, upgradeSum));
     
     drawNest(ctx, rc, nestX + 40, nestY, nestLevel, 0.3); 
   }

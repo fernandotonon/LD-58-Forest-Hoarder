@@ -45,6 +45,12 @@ export function updateGame(deltaTime, { input, camera, physics, time, rng, canva
   // Update player
   updatePlayerMovement(deltaTime, input, physics, player, updatePlayer, setPlayerVelocity);
 
+  // Auto-close nest UI if player moves left/right
+  if (input.getHorizontal() !== 0) {
+    const { ui, toggleNest } = useStore.getState();
+    if (ui.showNest) toggleNest();
+  }
+
   // Spawn and update collectibles
   updateCollectibles(deltaTime, rng);
   handlePickupCollisions(addToPantry, addNotification);
@@ -163,31 +169,14 @@ function handleInteractions(input, player, toggleNest, addToInventory, addNotifi
         player.x + 24 > nestX &&
         player.y < nestY + nestHeight &&
         player.y + 32 > nestY) {
-      // Deposit all inventory to pantry when at nest
-      const { addToPantry, updatePlayer, getItemWeight } = useStore.getState();
-      const inv = [...player.inventory];
-      let depositCount = 0;
-      for (let i = 0; i < inv.length; i++) {
-        const slot = inv[i];
-        if (slot && slot.quantity > 0) {
-          addToPantry(slot.item, slot.quantity);
-          depositCount += slot.quantity;
-        }
-      }
-      // Clear inventory and carry weight
-      updatePlayer({ inventory: [], carryWeight: 0 });
-      if (depositCount > 0) {
-        addNotification(`Deposited ${depositCount} item(s)`, 'info', 1200);
-      } else {
-        addNotification('Nothing to deposit', 'info', 800);
-      }
-      // Optionally open nest UI
+      // Open nest UI only; deposit is done via button inside Nest UI
       toggleNest();
+      addNotification('Nest opened', 'info', 800);
       return;
     }
     
     // Spawn random pickups for demo
-    const pickupTypes = ['acorn', 'hazelnut', 'berry', 'mushroom', 'leaf', 'twig'];
+    const pickupTypes = ITEM_KINDS;
     const randomType = pickupTypes[Math.floor(Math.random() * pickupTypes.length)];
     
     if (player.inventory.length < 10) {
@@ -223,7 +212,8 @@ const worldState = {
   pickups: [] // {id, x, y, kind, bob}
 };
 
-const PICKUP_KINDS = ['acorn', 'berry', 'cone', 'leaf'];
+import { ITEM_KINDS } from './constants';
+const PICKUP_KINDS = ITEM_KINDS;
 
 function updateCollectibles(deltaTime, rng) {
   // Keep a small number of pickups active near the play area

@@ -124,7 +124,7 @@ export function drawCollectible(ctx, x, y, kind='acorn', scale=0.25) {
     switch(kind){
       case 'acorn': index = 0; break;
       case 'berry': index = 1; break; // uses apple-ish placeholder as berry
-      case 'cone': index = 2; break;
+      case 'pine': index = 2; break;
       case 'leaf': index = 3; break;
       default: index = 0;
     }

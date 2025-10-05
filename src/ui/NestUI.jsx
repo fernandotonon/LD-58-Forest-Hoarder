@@ -111,12 +111,6 @@ export default function NestUI() {
           <h3>Food Pantry</h3>
           <p>Your stored food for winter survival.</p>
           
-          <div style={{ marginBottom: '20px' }}>
-            <button className="button" onClick={handleDepositAll}>
-              📦 Deposit All Items
-            </button>
-          </div>
-          
           <div>
             {Object.entries(nest.pantry).map(([item, count]) => (
               <div key={item} style={{ 
@@ -166,7 +160,10 @@ export default function NestUI() {
         </div>
       )}
 
-      <div style={{ marginTop: '20px', textAlign: 'center' }}>
+      <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'center', gap: 12 }}>
+        <button className="button" onClick={handleDepositAll}>
+          📦 Deposit All Items
+        </button>
         <button className="button secondary" onClick={toggleNest}>
           🚪 Leave Nest
         </button>
