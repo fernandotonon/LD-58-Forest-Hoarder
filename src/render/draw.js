@@ -6,7 +6,7 @@
 import rough from 'roughjs';
 import { whenImagesReady } from './assets';
 import { SEASONAL_PALETTES, TILE_SIZE } from '../game/constants';
-import { drawSquirrel, drawTree, drawCollectible, drawBackground } from './sprites';
+import { drawSquirrel, drawTree, drawCollectible, drawBackground, drawNest } from './sprites';
 import { useStore } from '../state/useStore';
 
 let roughCanvas = null;
@@ -100,25 +100,17 @@ function drawEntities(ctx, rc, camera, time, palette, player) {
     });
   }
   
-  // Draw nest
+  // Draw nest with upgrade level
   const nestX = 100 - camera.x;
-  const nestY = 400 - camera.y;
+  const nestY = 500 - camera.y; // Position at ground level
   
-  if (camera.isVisible(100, 400, 100)) {
-    rc.rectangle(nestX, nestY, 80, 60, {
-      fill: '#8B4513',
-      stroke: '#654321',
-      strokeWidth: 2,
-      roughness: 1.0
-    });
+  if (camera.isVisible(100, 500, 100)) {
+    // Calculate nest upgrade level based on collected items
+    const { nest } = useStore.getState();
+    const totalItems = Object.values(nest.pantry).reduce((total, count) => total + count, 0);
+    const nestLevel = Math.min(3, Math.floor(totalItems / 5)); // Upgrade every 5 items
     
-    // Draw nest entrance
-    rc.ellipse(nestX + 40, nestY + 30, 20, 15, {
-      fill: '#000000',
-      stroke: '#654321',
-      strokeWidth: 1,
-      roughness: 0.5
-    });
+    drawNest(ctx, rc, nestX + 40, nestY, nestLevel, 0.3); // 50% smaller (0.6 -> 0.3)
   }
 }
 

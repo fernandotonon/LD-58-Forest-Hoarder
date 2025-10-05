@@ -186,6 +186,46 @@ export function drawCaveEntrance(ctx, rc, x, y, scale=0.5) {
   rc.arc(x, y, 40, { fill:'#9c805e', stroke:'#3e3e3e' });
 }
 
+// === NEST WITH UPGRADE LEVELS ===
+export function drawNest(ctx, rc, x, y, level=0, scale=0.5) {
+  const img = images.nest;
+  if (img && img.width) {
+    // Nest has 4 levels (0-3), arranged in a 2x2 grid
+    const gridWidth = 2;
+    const gridHeight = 2;
+    const cellWidth = Math.floor(img.width / gridWidth);
+    const cellHeight = Math.floor(img.height / gridHeight);
+    
+    // Calculate which cell to use based on level
+    const cellX = level % gridWidth;
+    const cellY = Math.floor(level / gridWidth);
+    
+    const sx = cellX * cellWidth;
+    const sy = cellY * cellHeight;
+    const dw = Math.floor(cellWidth * scale);
+    const dh = Math.floor(cellHeight * scale);
+    
+    // Use transparency processing
+    const transparentImg = makeTransparent(img);
+    ctx.drawImage(transparentImg, sx, sy, cellWidth, cellHeight, 
+                  Math.floor(x - dw/2), Math.floor(y - dh), dw, dh);
+    return;
+  }
+  
+  // Fallback: procedural nest based on level
+  const nestColors = ['#8B4513', '#A0522D', '#CD853F', '#DEB887'];
+  const nestSizes = [40, 50, 60, 70];
+  const color = nestColors[Math.min(level, 3)];
+  const size = nestSizes[Math.min(level, 3)];
+  
+  rc.ellipse(x, y, size, size * 0.8, { 
+    fill: color, 
+    stroke: '#654321', 
+    strokeWidth: 2, 
+    roughness: 1.0 
+  });
+}
+
 export function drawBackground(ctx, width, height) {
   // simple parchment backdrop if needed (actual season tint handled elsewhere)
   ctx.clearRect(0,0,width,height);
