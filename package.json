@@ -1,0 +1,26 @@
+{
+  "name": "forest-hoarder",
+  "version": "1.0.0",
+  "description": "A cozy 2D platformer about a squirrel preparing for winter",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "deploy": "gh-pages -d dist"
+  },
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "zustand": "^4.4.7",
+    "howler": "^2.2.3",
+    "roughjs": "^4.6.6"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.2.1",
+    "vite": "^5.1.0",
+    "eslint": "^8.57.0",
+    "prettier": "^3.2.5",
+    "gh-pages": "^6.1.1"
+  }
+}
