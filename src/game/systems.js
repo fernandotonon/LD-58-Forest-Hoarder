@@ -44,9 +44,6 @@ export function updateGame(deltaTime, { input, camera, physics, time, rng, canva
 
   // Update player
   updatePlayerMovement(deltaTime, input, physics, player, updatePlayer, setPlayerVelocity);
-  
-  // Clear just pressed states after processing
-  input.clearJustPressed();
 
   // Spawn and update collectibles
   updateCollectibles(deltaTime, rng);
@@ -63,6 +60,9 @@ export function updateGame(deltaTime, { input, camera, physics, time, rng, canva
 
   // Handle interactions
   handleInteractions(input, player, toggleNest, addToInventory, addNotification);
+
+  // Clear just pressed states after all systems that consume input
+  input.clearJustPressed();
 
   // Check win/lose conditions
   checkWinLoseConditions(time, showWinLose);
@@ -154,7 +154,7 @@ function handleInteractions(input, player, toggleNest, addToInventory, addNotifi
   // Check for nest interaction
   if (input.isInteractPressed()) {
     const nestX = 100;
-    const nestY = 400;
+    const nestY = 500; // align with ground baseline used in draw
     const nestWidth = 80;
     const nestHeight = 60;
     
@@ -163,6 +163,25 @@ function handleInteractions(input, player, toggleNest, addToInventory, addNotifi
         player.x + 24 > nestX &&
         player.y < nestY + nestHeight &&
         player.y + 32 > nestY) {
+      // Deposit all inventory to pantry when at nest
+      const { addToPantry, updatePlayer, getItemWeight } = useStore.getState();
+      const inv = [...player.inventory];
+      let depositCount = 0;
+      for (let i = 0; i < inv.length; i++) {
+        const slot = inv[i];
+        if (slot && slot.quantity > 0) {
+          addToPantry(slot.item, slot.quantity);
+          depositCount += slot.quantity;
+        }
+      }
+      // Clear inventory and carry weight
+      updatePlayer({ inventory: [], carryWeight: 0 });
+      if (depositCount > 0) {
+        addNotification(`Deposited ${depositCount} item(s)`, 'info', 1200);
+      } else {
+        addNotification('Nothing to deposit', 'info', 800);
+      }
+      // Optionally open nest UI
       toggleNest();
       return;
     }
@@ -238,9 +257,10 @@ function handlePickupCollisions(addToPantry, addNotification) {
     const dx = Math.abs((px) - (p.x));
     const dy = Math.abs((py) - (p.y));
     if (dx < 20 && dy < 24) {
-      // collect
-      addToPantry(p.kind, 1);
-      addNotification(`+1 ${p.kind}`, 'success', 1200);
+      // collect into inventory (not pantry)
+      const { addToInventory } = useStore.getState();
+      addToInventory(p.kind, 1);
+      addNotification(`Picked ${p.kind}`, 'success', 1000);
       worldState.pickups.splice(i, 1);
     }
   }

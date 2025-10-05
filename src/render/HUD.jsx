@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useMemo, useRef, useEffect } from 'react';
 import { useStore } from '../state/useStore';
+import { images } from './assets';
 
 export default function HUD() {
   const { 
@@ -56,8 +57,26 @@ export default function HUD() {
             <div 
               key={i} 
               className={`inventory-slot ${slot ? 'filled' : ''}`}
+              style={{ position: 'relative' }}
             >
-              {slot ? slot.quantity : ''}
+              {slot ? (
+                <>
+                  <ItemIcon item={slot.item} />
+                  <span style={{ 
+                    position: 'absolute', 
+                    top: 2, 
+                    right: 2, 
+                    padding: '1px 4px', 
+                    borderRadius: 6,
+                    fontSize: 10, 
+                    fontWeight: 700,
+                    color: '#fff',
+                    background: 'rgba(0,0,0,0.65)'
+                  }}>
+                    {slot.quantity}
+                  </span>
+                </>
+              ) : ''}
             </div>
           );
         })}
@@ -79,4 +98,46 @@ export default function HUD() {
       ))}
     </div>
   );
+}
+
+function ItemIcon({ item }) {
+  const canvasRef = useRef(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    const img = images.collectibles;
+    if (!img || !img.width) return;
+    // Map item to index in collectibles spritesheet
+    let index = 0;
+    switch (item) {
+      case 'acorn': index = 0; break;
+      case 'berry': index = 1; break;
+      case 'cone': index = 2; break;
+      case 'leaf': index = 3; break;
+      case 'hazelnut': index = 0; break;
+      case 'mushroom': index = 1; break;
+      default: index = 0;
+    }
+    const gridCols = 2;
+    const cw = Math.floor(img.width / gridCols);
+    const ch = Math.floor(img.height / 2);
+    const sx = (index % gridCols) * cw;
+    const sy = Math.floor(index / gridCols) * ch;
+
+    const scale = 0.22; // small icon scale
+    const dw = Math.floor(cw * scale);
+    const dh = Math.floor(ch * scale);
+    const tx = Math.floor((canvas.width - dw) / 2);
+    const ty = Math.floor((canvas.height - dh) / 2);
+
+    // Draw cropped sprite
+    ctx.imageSmoothingEnabled = false;
+    ctx.drawImage(img, sx, sy, cw, ch, tx, ty, dw, dh);
+  }, [item]);
+
+  return <canvas ref={canvasRef} width={28} height={28} />;
 }
