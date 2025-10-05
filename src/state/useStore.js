@@ -33,7 +33,7 @@ const useStore = create(
       // Nest state
       nest: {
         pantry: {},
-        materials: { leaf: 0, twig: 0 },
+        materials: { leaf: 0, pine: 0 },
         upgrades: {
           basket: 0,
           insulation: 0,
@@ -280,7 +280,7 @@ const useStore = create(
         },
         nest: {
           pantry: {},
-          materials: { leaf: 0, twig: 0 },
+          materials: { leaf: 0, pine: 0 },
           upgrades: {
             basket: 0,
             insulation: 0,

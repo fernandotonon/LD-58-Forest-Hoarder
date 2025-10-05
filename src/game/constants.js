@@ -77,11 +77,11 @@ export const TILE_TYPES = {
 
 // Upgrade costs
 export const UPGRADE_COSTS = {
-  basket: { leaf: 20, twig: 10 },
-  insulation: { leaf: 30, twig: 15 },
-  rack: { twig: 25, leaf: 15 },
-  pillow: { leaf: 40, twig: 5 },
-  map: { twig: 20, leaf: 10 }
+  basket: { leaf: 20, pine: 10 },
+  insulation: { leaf: 30, pine: 15 },
+  rack: { pine: 25, leaf: 15 },
+  pillow: { leaf: 40, pine: 5 },
+  map: { pine: 20, leaf: 10 }
 };
 
 // Visual constants

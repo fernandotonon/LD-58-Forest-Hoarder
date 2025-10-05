@@ -11,7 +11,12 @@ export default function NestUI() {
     
     player.inventory.forEach(slot => {
       if (slot.item && slot.quantity > 0) {
-        addToPantry(slot.item, slot.quantity);
+        // Food items go to pantry; materials accumulate in nest.materials
+        if (slot.item === 'acorn' || slot.item === 'berry') {
+          addToPantry(slot.item, slot.quantity);
+        } else if (slot.item === 'leaf' || slot.item === 'pine') {
+          addMaterials(slot.item, slot.quantity);
+        }
         removeFromInventory(slot.item, slot.quantity);
       }
     });
@@ -112,7 +117,7 @@ export default function NestUI() {
           <p>Your stored food for winter survival.</p>
           
           <div>
-            {Object.entries(nest.pantry).map(([item, count]) => (
+            {Object.entries(nest.pantry).filter(([k]) => (k === 'acorn' || k === 'berry')).map(([item, count]) => (
               <div key={item} style={{ 
                 display: 'flex', 
                 justifyContent: 'space-between', 
@@ -139,7 +144,7 @@ export default function NestUI() {
           <p>Resources for crafting upgrades.</p>
           
           <div>
-            {Object.entries(nest.materials).map(([material, count]) => (
+            {['leaf','pine'].map((k) => [k, nest.materials[k] || 0]).map(([material, count]) => (
               <div key={material} style={{ 
                 display: 'flex', 
                 justifyContent: 'space-between', 
@@ -151,7 +156,7 @@ export default function NestUI() {
                 <span>{material}: {count}</span>
               </div>
             ))}
-            {Object.keys(nest.materials).length === 0 && (
+            {(['leaf','pine'].every(k => (nest.materials[k]||0)===0)) && (
               <p style={{ color: '#666', fontStyle: 'italic' }}>
                 No materials collected yet. Gather leaves and twigs!
               </p>
