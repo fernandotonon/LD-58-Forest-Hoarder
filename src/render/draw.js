@@ -60,7 +60,7 @@ function drawParallaxBackgrounds(ctx, rc, camera, time, palette, canvas) {
 
 function drawWorld(ctx, rc, camera, time, palette, canvas) {
   // Ground line
-  const groundY = 500; // baseline used by physics
+  const groundY = 600; // baseline aligned with physics
 
   // Draw tiled ground from tilesheet
   drawGround(ctx, groundY, camera.x, canvas.width, 0.6);
@@ -68,7 +68,7 @@ function drawWorld(ctx, rc, camera, time, palette, canvas) {
   // Trees
   for (let i = 0; i < 10; i++) {
     const treeX = i * 200 - camera.x;
-    const treeY = groundY - 10 - camera.y;
+    const treeY = groundY - 50 - camera.y;
     
     if (camera.isVisible(treeX, treeY, 100)) {
       drawTree(ctx, rc, treeX, treeY, 0.4);
@@ -103,7 +103,7 @@ function drawEntities(ctx, rc, camera, time, palette, player) {
 
   // Draw nest with upgrade level
   const nestX = 100 - camera.x;
-  const nestY = 500 - camera.y; // Position at ground level
+  const nestY = 560 - camera.y; // Position at ground level
   
   if (camera.isVisible(100, 500, 100)) {
     // Calculate nest upgrade level based on collected items
@@ -111,7 +111,7 @@ function drawEntities(ctx, rc, camera, time, palette, player) {
     const totalItems = Object.values(nest.pantry).reduce((total, count) => total + count, 0);
     const nestLevel = Math.min(3, Math.floor(totalItems / 5)); // Upgrade every 5 items
     
-    drawNest(ctx, rc, nestX + 40, nestY, nestLevel, 0.3); // 50% smaller (0.6 -> 0.3)
+    drawNest(ctx, rc, nestX + 40, nestY, nestLevel, 0.3); 
   }
 }
 

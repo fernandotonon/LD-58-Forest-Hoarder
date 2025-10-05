@@ -28,7 +28,8 @@ export class Camera {
   // Follow a target (usually the player)
   follow(target, deltaTime) {
     this.targetX = target.x - this.canvas.width / 2;
-    this.targetY = target.y - this.canvas.height / 2;
+    // Keep vertical camera fixed so the world doesn't bob when the player jumps
+    this.targetY = 0;
     
     // Smooth following
     const lerpFactor = 1 - Math.exp(-this.followSpeed * deltaTime);

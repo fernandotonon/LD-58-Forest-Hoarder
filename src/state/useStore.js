@@ -236,12 +236,21 @@ const useStore = create(
         ui: { ...state.ui, showWinLose: false, winLoseType: null }
       })),
       
-      addNotification: (message, type = 'info') => set((state) => ({
-        ui: {
-          ...state.ui,
-          notifications: [...state.ui.notifications, { message, type, id: Date.now() }]
-        }
-      })),
+      addNotification: (message, type = 'info', durationMs = 1500) => {
+        const id = Date.now() + Math.floor(Math.random() * 1000000);
+        set((state) => ({
+          ui: {
+            ...state.ui,
+            notifications: [...state.ui.notifications, { message, type, id }]
+          }
+        }));
+        // Auto-dismiss after duration
+        setTimeout(() => {
+          const { removeNotification } = get();
+          removeNotification(id);
+        }, durationMs);
+        return id;
+      },
       
       removeNotification: (id) => set((state) => ({
         ui: {

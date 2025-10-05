@@ -240,7 +240,7 @@ function handlePickupCollisions(addToPantry, addNotification) {
     if (dx < 20 && dy < 24) {
       // collect
       addToPantry(p.kind, 1);
-      addNotification(`+1 ${p.kind}`, 'success');
+      addNotification(`+1 ${p.kind}`, 'success', 1200);
       worldState.pickups.splice(i, 1);
     }
   }
