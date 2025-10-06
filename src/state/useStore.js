@@ -5,6 +5,7 @@
 
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { DAILY_QUESTS, ACHIEVEMENTS } from '../game/constants';
 
 const useStore = create(
   persist(
@@ -19,15 +20,19 @@ const useStore = create(
       // Player state
       player: {
         x: 100,
-        y: 450,
+        y: 500,
         vx: 0,
         vy: 0,
         facing: 'right',
-        onGround: false,
+        onGround: true,
         stamina: 100,
+        health: 5,
+        maxHealth: 5,
+        invincibilityTime: 0,
         inventory: [],
         carryWeight: 0,
-        maxCarryWeight: 20
+        maxCarryWeight: 20,
+        attackCooldown: 0
       },
       
       // Nest state
@@ -50,7 +55,36 @@ const useStore = create(
         entities: [],
         pickups: [],
         pushables: [],
-        triggers: []
+        triggers: [],
+        enemies: []
+      },
+      
+      // Quest system
+      quests: {
+        daily: [],
+        seasonal: [],
+        completed: [],
+        progress: {}
+      },
+      
+      // Achievement system
+      achievements: {
+        unlocked: [],
+        progress: {},
+        stats: {
+          itemsCollected: 0,
+          enemiesKilled: 0,
+          daysSurvived: 0,
+          seasonsCompleted: 0,
+          upgradesBuilt: 0,
+          questsCompleted: 0
+        }
+      },
+      
+      // Power-up system
+      powerups: {
+        active: [], // Currently active power-ups
+        inventory: [] // Power-ups in inventory
       },
       
       // UI state
@@ -59,6 +93,8 @@ const useStore = create(
         showNest: false,
         showPause: false,
         showWinLose: false,
+        showQuests: false,
+        showAchievements: false,
         winLoseType: null, // 'win' or 'lose'
         notifications: []
       },
@@ -77,6 +113,25 @@ const useStore = create(
       // Player actions
       updatePlayer: (updates) => set((state) => ({
         player: { ...state.player, ...updates }
+      })),
+      
+      damagePlayer: (damage) => set((state) => {
+        if (state.player.invincibilityTime > 0) return state;
+        const newHealth = Math.max(0, state.player.health - damage);
+        return {
+          player: {
+            ...state.player,
+            health: newHealth,
+            invincibilityTime: 1.0
+          }
+        };
+      }),
+      
+      healPlayer: (amount) => set((state) => ({
+        player: {
+          ...state.player,
+          health: Math.min(state.player.maxHealth, state.player.health + amount)
+        }
       })),
       
       movePlayer: (dx, dy) => set((state) => ({
@@ -215,6 +270,192 @@ const useStore = create(
         return calories[item] || 0;
       },
       
+      // Enemy actions
+      addEnemy: (enemy) => set((state) => ({
+        world: {
+          ...state.world,
+          enemies: [...state.world.enemies, enemy]
+        }
+      })),
+      
+      removeEnemy: (enemyId) => set((state) => ({
+        world: {
+          ...state.world,
+          enemies: state.world.enemies.filter(e => e.id !== enemyId)
+        }
+      })),
+      
+      updateEnemy: (enemyId, updates) => set((state) => ({
+        world: {
+          ...state.world,
+          enemies: state.world.enemies.map(e => 
+            e.id === enemyId ? { ...e, ...updates } : e
+          )
+        }
+      })),
+      
+      // Quest actions
+      addQuest: (quest) => set((state) => ({
+        quests: {
+          ...state.quests,
+          daily: [...state.quests.daily, quest]
+        }
+      })),
+      
+      completeQuest: (questId) => set((state) => {
+        const quest = state.quests.daily.find(q => q.id === questId) || 
+                     state.quests.seasonal.find(q => q.id === questId);
+        if (!quest) return state;
+        
+        return {
+          quests: {
+            ...state.quests,
+            daily: state.quests.daily.filter(q => q.id !== questId),
+            seasonal: state.quests.seasonal.filter(q => q.id !== questId),
+            completed: [...state.quests.completed, quest]
+          }
+        };
+      }),
+      
+      updateQuestProgress: (questId, progress) => set((state) => ({
+        quests: {
+          ...state.quests,
+          progress: {
+            ...state.quests.progress,
+            [questId]: progress
+          }
+        }
+      })),
+      
+      generateDailyQuests: () => set((state) => {
+        const randomQuests = DAILY_QUESTS
+          .sort(() => Math.random() - 0.5)
+          .slice(0, 2); // 2 daily quests
+        
+        return {
+          quests: {
+            ...state.quests,
+            daily: randomQuests.map(quest => ({
+              ...quest,
+              progress: 0,
+              completed: false
+            }))
+          }
+        };
+      }),
+      
+      // Achievement actions
+      unlockAchievement: (achievementId) => set((state) => {
+        if (state.achievements.unlocked.includes(achievementId)) return state;
+        
+        return {
+          achievements: {
+            ...state.achievements,
+            unlocked: [...state.achievements.unlocked, achievementId]
+          }
+        };
+      }),
+      
+      updateAchievementStats: (stat, value) => set((state) => ({
+        achievements: {
+          ...state.achievements,
+          stats: {
+            ...state.achievements.stats,
+            [stat]: (state.achievements.stats[stat] || 0) + value
+          }
+        }
+      })),
+      
+      checkAchievements: () => set((state) => {
+        const { stats, unlocked } = state.achievements;
+        const newUnlocks = [];
+        
+        ACHIEVEMENTS.forEach(achievement => {
+          if (unlocked.includes(achievement.id)) return;
+          
+          let isUnlocked = false;
+          const { condition } = achievement;
+          
+          switch (condition.type) {
+            case 'collect':
+              isUnlocked = stats.itemsCollected >= condition.total;
+              break;
+            case 'kill':
+              if (condition.enemy) {
+                // Specific enemy type - would need separate tracking
+                isUnlocked = stats.enemiesKilled >= condition.total;
+              } else {
+                isUnlocked = stats.enemiesKilled >= condition.total;
+              }
+              break;
+            case 'survive':
+              isUnlocked = stats.daysSurvived >= condition.days;
+              break;
+            case 'season':
+              isUnlocked = stats.seasonsCompleted >= condition.total;
+              break;
+            case 'upgrade':
+              isUnlocked = stats.upgradesBuilt >= condition.total;
+              break;
+            case 'quest':
+              isUnlocked = stats.questsCompleted >= condition.total;
+              break;
+          }
+          
+          if (isUnlocked) {
+            newUnlocks.push(achievement);
+          }
+        });
+        
+        if (newUnlocks.length > 0) {
+          return {
+            achievements: {
+              ...state.achievements,
+              unlocked: [...unlocked, ...newUnlocks.map(a => a.id)]
+            }
+          };
+        }
+        
+        return state;
+      }),
+      
+      // Power-up actions
+      addPowerup: (powerup) => set((state) => ({
+        powerups: {
+          ...state.powerups,
+          inventory: [...state.powerups.inventory, powerup]
+        }
+      })),
+      
+      activatePowerup: (powerupId) => set((state) => {
+        const powerup = state.powerups.inventory.find(p => p.id === powerupId);
+        if (!powerup) return state;
+        
+        return {
+          powerups: {
+            ...state.powerups,
+            inventory: state.powerups.inventory.filter(p => p.id !== powerupId),
+            active: [...state.powerups.active, { ...powerup, startTime: Date.now() }]
+          }
+        };
+      }),
+      
+      removePowerup: (powerupId) => set((state) => ({
+        powerups: {
+          ...state.powerups,
+          active: state.powerups.active.filter(p => p.id !== powerupId)
+        }
+      })),
+      
+      updatePowerupDuration: (powerupId, remainingTime) => set((state) => ({
+        powerups: {
+          ...state.powerups,
+          active: state.powerups.active.map(p => 
+            p.id === powerupId ? { ...p, remainingTime } : p
+          )
+        }
+      })),
+      
       // UI actions
       toggleInventory: () => set((state) => ({
         ui: { ...state.ui, showInventory: !state.ui.showInventory }
@@ -222,6 +463,14 @@ const useStore = create(
       
       toggleNest: () => set((state) => ({
         ui: { ...state.ui, showNest: !state.ui.showNest }
+      })),
+      
+      toggleQuests: () => set((state) => ({
+        ui: { ...state.ui, showQuests: !state.ui.showQuests }
+      })),
+      
+      toggleAchievements: () => set((state) => ({
+        ui: { ...state.ui, showAchievements: !state.ui.showAchievements }
       })),
       
       togglePause: () => set((state) => ({
@@ -268,15 +517,19 @@ const useStore = create(
         timeOfDay: 0,
         player: {
           x: 100,
-          y: 450,
+          y: 500,
           vx: 0,
           vy: 0,
           facing: 'right',
-          onGround: false,
+          onGround: true,
           stamina: 100,
+          health: 5,
+          maxHealth: 5,
+          invincibilityTime: 0,
           inventory: [],
           carryWeight: 0,
-          maxCarryWeight: 20
+          maxCarryWeight: 20,
+          attackCooldown: 0
         },
         nest: {
           pantry: {},
@@ -295,13 +548,38 @@ const useStore = create(
           entities: [],
           pickups: [],
           pushables: [],
-          triggers: []
+          triggers: [],
+          enemies: []
+        },
+        quests: {
+          daily: [],
+          seasonal: [],
+          completed: [],
+          progress: {}
+        },
+        achievements: {
+          unlocked: [],
+          progress: {},
+          stats: {
+            itemsCollected: 0,
+            enemiesKilled: 0,
+            daysSurvived: 0,
+            seasonsCompleted: 0,
+            upgradesBuilt: 0,
+            questsCompleted: 0
+          }
+        },
+        powerups: {
+          active: [],
+          inventory: []
         },
         ui: {
           showInventory: false,
           showNest: false,
           showPause: false,
           showWinLose: false,
+          showQuests: false,
+          showAchievements: false,
           winLoseType: null,
           notifications: []
         }

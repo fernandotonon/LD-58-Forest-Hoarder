@@ -10,6 +10,7 @@ export default function HUD() {
     timeOfDay,
     player,
     nest,
+    powerups,
     ui
   } = useStore();
 
@@ -27,6 +28,17 @@ export default function HUD() {
     return Object.values(nest.pantry).reduce((total, count) => total + count, 0);
   };
 
+  const getActivePowerups = () => {
+    return powerups.active || [];
+  };
+
+  const getAchievementProgress = () => {
+    const { achievements } = useStore.getState();
+    const totalAchievements = 10; // Total number of achievements
+    const unlockedCount = achievements.unlocked.length;
+    return { current: unlockedCount, total: totalAchievements, percent: (unlockedCount / totalAchievements) * 100 };
+  };
+
   return (
     <div className="hud">
       {/* Top left - Game info */}
@@ -35,11 +47,35 @@ export default function HUD() {
         <div>Day: {day}</div>
         <div>Time: {getTimeString()}</div>
         <div>Weather: {weather}</div>
+        
+        {/* Achievement Progress */}
+        <div style={{ marginTop: 8 }}>
+          <div style={{ fontSize: 12, marginBottom: 2 }}>Achievements</div>
+          <div className="status-bar" style={{ width: 80, height: 6 }}>
+            <div 
+              className="status-fill" 
+              style={{ 
+                width: `${getAchievementProgress().percent}%`,
+                background: 'linear-gradient(90deg, #FFD700, #FFA500)'
+              }}
+            />
+          </div>
+          <div style={{ fontSize: 10, color: '#FFD700' }}>
+            {getAchievementProgress().current}/{getAchievementProgress().total}
+          </div>
+        </div>
       </div>
 
       {/* Top right - Status bars */}
       <div className="hud-overlay hud-top-right">
-        <div>Stamina</div>
+        <div>Health</div>
+        <div className="status-bar">
+          <div 
+            className="status-fill health" 
+            style={{ width: `${(player.health / player.maxHealth) * 100}%` }}
+          />
+        </div>
+        <div style={{ marginTop: 6 }}>Stamina</div>
         <div className="status-bar">
           <div 
             className="status-fill stamina" 
@@ -53,6 +89,26 @@ export default function HUD() {
             <div key={k}>{k}: {v}</div>
           ))}
         </div>
+        
+        {/* Active Power-ups */}
+        {getActivePowerups().length > 0 && (
+          <>
+            <div style={{ marginTop: 12, fontSize: 12, fontWeight: 'bold' }}>Active Power-ups:</div>
+            <div style={{ fontSize: 10, lineHeight: 1.2 }}>
+              {getActivePowerups().map((powerup, index) => (
+                <div key={powerup.id || index} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <span>{powerup.icon}</span>
+                  <span>{powerup.title}</span>
+                  {powerup.remainingTime && (
+                    <span style={{ color: '#FFD700' }}>
+                      ({Math.ceil(powerup.remainingTime)}s)
+                    </span>
+                  )}
+                </div>
+              ))}
+            </div>
+          </>
+        )}
       </div>
 
       {/* Bottom left - Inventory */}
@@ -91,6 +147,9 @@ export default function HUD() {
       {/* Bottom right - Quick actions */}
       <div className="hud-overlay hud-bottom-right">
         <div>E - Interact</div>
+        <div>X/F - Attack</div>
+        <div>Q - Quests</div>
+        <div>A - Achievements</div>
         <div>ESC - Pause</div>
         <div>WASD - Move</div>
         <div>Space - Jump</div>

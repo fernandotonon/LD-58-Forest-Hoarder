@@ -270,3 +270,178 @@ export function drawGround(ctx, y, cameraX, canvasWidth, scale=0.5) {
     ctx.drawImage(transparentImg, sx, sy, sw, sh, screenX, screenY, dw, dh);
   }
 }
+
+// Hazards: spikes strip
+export function drawSpikes(ctx, x, y, width) {
+  ctx.fillStyle = '#7a6f6a';
+  const count = Math.max(3, Math.floor(width / 14));
+  const w = Math.floor(width / count);
+  for (let i = 0; i < count; i++) {
+    const sx = x + i * w;
+    ctx.beginPath();
+    ctx.moveTo(sx, y);
+    ctx.lineTo(sx + w / 2, y - 16);
+    ctx.lineTo(sx + w, y);
+    ctx.closePath();
+    ctx.fill();
+  }
+}
+
+// Platform block
+export function drawPlatform(ctx, x, y, width) {
+  ctx.fillStyle = '#6b4f32';
+  ctx.fillRect(Math.floor(x), Math.floor(y - 12), Math.floor(width), 12);
+  ctx.strokeStyle = '#3e2a1c';
+  ctx.lineWidth = 2;
+  ctx.strokeRect(Math.floor(x), Math.floor(y - 12), Math.floor(width), 12);
+}
+
+// Enemy drawing
+export function drawEnemy(ctx, rc, x, y, enemy, palette) {
+  const { type, health, maxHealth, state, direction } = enemy;
+  
+  // Draw enemy body based on type
+  if (type === 'wolf') {
+    // Wolf - brown, four-legged
+    rc.ellipse(x, y, 25, 15, { 
+      fill: '#8B4513', 
+      stroke: '#654321', 
+      roughness: 1.0 
+    });
+    // Head
+    rc.ellipse(x + (direction > 0 ? 15 : -15), y - 5, 12, 10, { 
+      fill: '#8B4513', 
+      stroke: '#654321', 
+      roughness: 1.0 
+    });
+    // Legs
+    for (let i = 0; i < 4; i++) {
+      const legX = x + (i < 2 ? -8 : 8) + (i % 2) * 4;
+      rc.rectangle(legX, y + 8, 3, 8, { 
+        fill: '#654321', 
+        stroke: '#3e2a1c' 
+      });
+    }
+  } else if (type === 'bear') {
+    // Bear - larger, darker
+    rc.ellipse(x, y, 35, 20, { 
+      fill: '#654321', 
+      stroke: '#3e2a1c', 
+      roughness: 1.2 
+    });
+    // Head
+    rc.ellipse(x + (direction > 0 ? 20 : -20), y - 8, 15, 12, { 
+      fill: '#654321', 
+      stroke: '#3e2a1c', 
+      roughness: 1.2 
+    });
+    // Legs
+    for (let i = 0; i < 4; i++) {
+      const legX = x + (i < 2 ? -12 : 12) + (i % 2) * 6;
+      rc.rectangle(legX, y + 12, 5, 10, { 
+        fill: '#3e2a1c', 
+        stroke: '#2c1810' 
+      });
+    }
+  } else if (type === 'hawk') {
+    // Hawk - flying, wings spread
+    rc.ellipse(x, y, 20, 8, { 
+      fill: '#8B4513', 
+      stroke: '#654321', 
+      roughness: 0.8 
+    });
+    // Wings
+    rc.ellipse(x - 15, y - 3, 12, 6, { 
+      fill: '#654321', 
+      stroke: '#3e2a1c', 
+      roughness: 0.8 
+    });
+    rc.ellipse(x + 15, y - 3, 12, 6, { 
+      fill: '#654321', 
+      stroke: '#3e2a1c', 
+      roughness: 0.8 
+    });
+    // Head
+    rc.ellipse(x + (direction > 0 ? 12 : -12), y - 2, 8, 6, { 
+      fill: '#8B4513', 
+      stroke: '#654321', 
+      roughness: 0.8 
+    });
+  }
+  
+  // Draw health bar
+  if (health < maxHealth) {
+    const barWidth = 30;
+    const barHeight = 4;
+    const barX = x - barWidth / 2;
+    const barY = y - 25;
+    
+    // Background
+    ctx.fillStyle = '#333';
+    ctx.fillRect(barX, barY, barWidth, barHeight);
+    
+    // Health
+    const healthPercent = health / maxHealth;
+    ctx.fillStyle = healthPercent > 0.5 ? '#4CAF50' : healthPercent > 0.25 ? '#FFC107' : '#F44336';
+    ctx.fillRect(barX, barY, barWidth * healthPercent, barHeight);
+    
+    // Border
+    ctx.strokeStyle = '#000';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(barX, barY, barWidth, barHeight);
+  }
+  
+  // State indicator
+  if (state === 'chase') {
+    // Red exclamation mark
+    ctx.fillStyle = '#F44336';
+    ctx.font = '12px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText('!', x, y - 35);
+  } else if (state === 'attack') {
+    // Red X
+    ctx.fillStyle = '#F44336';
+    ctx.font = '12px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText('X', x, y - 35);
+  }
+}
+
+// Power-up drawing
+export function drawPowerup(ctx, rc, x, y, powerup, palette) {
+  const { icon, color, rarity } = powerup;
+  
+  // Draw power-up background based on rarity
+  const rarityColors = {
+    common: '#90EE90',
+    uncommon: '#87CEEB', 
+    rare: '#DDA0DD',
+    epic: '#FFD700'
+  };
+  
+  const bgColor = rarityColors[rarity] || '#90EE90';
+  
+  // Draw background circle
+  rc.ellipse(x, y, 20, 20, { 
+    fill: bgColor, 
+    stroke: color, 
+    strokeWidth: 2,
+    roughness: 0.5 
+  });
+  
+  // Draw icon
+  ctx.fillStyle = color;
+  ctx.font = '16px Arial';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(icon, x, y);
+  
+  // Draw rarity indicator
+  if (rarity === 'rare' || rarity === 'epic') {
+    ctx.strokeStyle = '#FFD700';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.arc(x, y, 22, 0, Math.PI * 2);
+    ctx.stroke();
+  }
+}

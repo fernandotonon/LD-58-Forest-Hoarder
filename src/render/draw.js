@@ -6,8 +6,9 @@
 import rough from 'roughjs';
 import { whenImagesReady } from './assets';
 import { SEASONAL_PALETTES, TILE_SIZE } from '../game/constants';
-import { drawSquirrel, drawTree, drawCollectible, drawBackground, drawNest, drawGround } from './sprites';
-import { getWorldPickups } from '../game/systems';
+import { drawSquirrel, drawTree, drawCollectible, drawBackground, drawNest, drawGround, drawSpikes, drawPlatform, drawEnemy, drawPowerup } from './sprites';
+import { CHALLENGES } from '../game/constants';
+import { getWorldPickups, getWorldPowerups } from '../game/systems';
 import { useStore } from '../state/useStore';
 
 let roughCanvas = null;
@@ -65,13 +66,34 @@ function drawWorld(ctx, rc, camera, time, palette, canvas) {
   // Draw tiled ground from tilesheet
   drawGround(ctx, groundY, camera.x, canvas.width, 0.6);
 
-  // Trees
-  for (let i = 0; i < 10; i++) {
-    const treeX = i * 200 - camera.x;
-    const treeY = groundY - 50 - camera.y;
-    
-    if (camera.isVisible(treeX, treeY, 100)) {
-      drawTree(ctx, rc, treeX, treeY, 0.4);
+  // Pits: simply skip ground in pit spans by overdrawing clear rects
+  ctx.clearRect(0,0,0,0); // noop ensures ctx available
+  CHALLENGES.pits.forEach(p => {
+    const sx = Math.floor(p.x - camera.x);
+    ctx.clearRect(sx, groundY - 24, p.width, 48);
+  });
+
+  // Spikes
+  CHALLENGES.spikes.forEach(s => {
+    drawSpikes(ctx, Math.floor(s.x - camera.x), s.y - camera.y, s.width);
+  });
+
+  // Static platforms
+  CHALLENGES.platforms.forEach(pl => {
+    drawPlatform(ctx, Math.floor(pl.x - camera.x), pl.y - camera.y, pl.width);
+  });
+
+  // Trees: tile across world relative to camera
+  const spacing = 200;
+  const startIdx = Math.floor((camera.x - 200) / spacing);
+  const endIdx = Math.floor((camera.x + canvas.width + 200) / spacing);
+  for (let i = startIdx; i <= endIdx; i++) {
+    const worldX = i * spacing;
+    const worldY = groundY - 50;
+    const screenX = worldX - camera.x;
+    const screenY = worldY - camera.y;
+    if (camera.isVisible(worldX, worldY, 150)) {
+      drawTree(ctx, rc, screenX, screenY, 0.4);
     }
   }
 }
@@ -98,6 +120,29 @@ function drawEntities(ctx, rc, camera, time, palette, player) {
     const py = p.y - camera.y + Math.sin(p.bob) * 3; // bobbing
     if (camera.isVisible(p.x, p.y, 60)) {
       drawCollectible(ctx, px, py, p.kind, 0.18);
+    }
+  }
+  
+  // Draw enemies
+  const { world } = useStore.getState();
+  world.enemies.forEach(enemy => {
+    if (enemy.health > 0 && enemy.state !== 'dead') {
+      const ex = enemy.x - camera.x;
+      const ey = enemy.y - camera.y;
+      if (camera.isVisible(enemy.x, enemy.y, 50)) {
+        drawEnemy(ctx, rc, ex, ey, enemy, palette);
+      }
+    }
+  });
+  
+  // Draw world power-ups
+  const powerups = getWorldPowerups();
+  for (let i = 0; i < powerups.length; i++) {
+    const p = powerups[i];
+    const px = p.x - camera.x;
+    const py = p.y - camera.y + Math.sin(p.bob) * 4; // bobbing
+    if (camera.isVisible(p.x, p.y, 60)) {
+      drawPowerup(ctx, rc, px, py, p, palette);
     }
   }
 

@@ -115,6 +115,8 @@ export default function GameScene() {
         width={800}
         height={600}
         style={{ display: 'block' }}
+        tabIndex={0}
+        onMouseDown={() => canvasRef.current?.focus()}
       />
       <HUD />
     </div>

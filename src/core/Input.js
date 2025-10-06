@@ -133,6 +133,18 @@ export class Input {
     return this.isJustPressed('Escape');
   }
 
+  isAttackPressed() {
+    return this.isJustPressed('KeyX') || this.isJustPressed('KeyF');
+  }
+
+  isQuestPressed() {
+    return this.isJustPressed('KeyQ');
+  }
+
+  isAchievementPressed() {
+    return this.isJustPressed('KeyA');
+  }
+
   // Clear just pressed/released states after processing
   clearJustPressed() {
     this.justPressed.clear();
