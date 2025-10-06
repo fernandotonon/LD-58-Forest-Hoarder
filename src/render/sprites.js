@@ -341,69 +341,69 @@ export function drawPlatform(ctx, rc, x, y, width) {
 export function drawEnemy(ctx, rc, x, y, enemy, palette) {
   const { type, health, maxHealth, state, direction } = enemy;
   
-  // Draw enemy body based on type (increased size)
+  // Draw enemy body based on type (much larger)
   if (type === 'wolf') {
-    // Wolf - brown, four-legged (larger)
-    rc.ellipse(x, y, 35, 20, { 
+    // Wolf - brown, four-legged (much larger)
+    rc.ellipse(x, y, 50, 30, { 
       fill: '#8B4513', 
       stroke: '#654321', 
       roughness: 1.0 
     });
     // Head
-    rc.ellipse(x + (direction > 0 ? 20 : -20), y - 8, 16, 14, { 
+    rc.ellipse(x + (direction > 0 ? 28 : -28), y - 12, 22, 18, { 
       fill: '#8B4513', 
       stroke: '#654321', 
       roughness: 1.0 
     });
     // Legs
     for (let i = 0; i < 4; i++) {
-      const legX = x + (i < 2 ? -12 : 12) + (i % 2) * 6;
-      rc.rectangle(legX, y + 12, 4, 12, { 
+      const legX = x + (i < 2 ? -18 : 18) + (i % 2) * 8;
+      rc.rectangle(legX, y + 18, 6, 16, { 
         fill: '#654321', 
         stroke: '#3e2a1c' 
       });
     }
   } else if (type === 'bear') {
-    // Bear - larger, darker (even bigger)
-    rc.ellipse(x, y, 45, 28, { 
+    // Bear - larger, darker (much bigger)
+    rc.ellipse(x, y, 65, 40, { 
       fill: '#654321', 
       stroke: '#3e2a1c', 
       roughness: 1.2 
     });
     // Head
-    rc.ellipse(x + (direction > 0 ? 25 : -25), y - 12, 20, 16, { 
+    rc.ellipse(x + (direction > 0 ? 35 : -35), y - 18, 28, 22, { 
       fill: '#654321', 
       stroke: '#3e2a1c', 
       roughness: 1.2 
     });
     // Legs
     for (let i = 0; i < 4; i++) {
-      const legX = x + (i < 2 ? -16 : 16) + (i % 2) * 8;
-      rc.rectangle(legX, y + 16, 6, 14, { 
+      const legX = x + (i < 2 ? -22 : 22) + (i % 2) * 10;
+      rc.rectangle(legX, y + 22, 8, 18, { 
         fill: '#3e2a1c', 
         stroke: '#2c1810' 
       });
     }
   } else if (type === 'hawk') {
-    // Hawk - flying, wings spread (larger)
-    rc.ellipse(x, y, 28, 12, { 
+    // Hawk - flying, wings spread (much larger)
+    rc.ellipse(x, y, 40, 18, { 
       fill: '#8B4513', 
       stroke: '#654321', 
       roughness: 0.8 
     });
     // Wings
-    rc.ellipse(x - 20, y - 5, 16, 8, { 
+    rc.ellipse(x - 28, y - 8, 22, 12, { 
       fill: '#654321', 
       stroke: '#3e2a1c', 
       roughness: 0.8 
     });
-    rc.ellipse(x + 20, y - 5, 16, 8, { 
+    rc.ellipse(x + 28, y - 8, 22, 12, { 
       fill: '#654321', 
       stroke: '#3e2a1c', 
       roughness: 0.8 
     });
     // Head
-    rc.ellipse(x + (direction > 0 ? 16 : -16), y - 3, 12, 8, { 
+    rc.ellipse(x + (direction > 0 ? 22 : -22), y - 5, 16, 12, { 
       fill: '#8B4513', 
       stroke: '#654321', 
       roughness: 0.8 

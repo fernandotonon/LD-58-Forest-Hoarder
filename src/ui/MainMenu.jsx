@@ -1,15 +1,18 @@
 import React from 'react';
 import { useStore } from '../state/useStore';
+import audioManager from '../audio/AudioManager';
 
 export default function MainMenu() {
   const { setGameState, resetGame } = useStore();
 
   const handleNewGame = () => {
+    audioManager.onButtonClick();
     resetGame();
     setGameState('playing');
   };
 
   const handleContinue = () => {
+    audioManager.onButtonClick();
     setGameState('playing');
   };
 

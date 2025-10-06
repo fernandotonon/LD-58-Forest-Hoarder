@@ -3,15 +3,16 @@ import { useStore } from '../state/useStore';
 import { images } from './assets';
 
 export default function HUD() {
-  const { 
-    season, 
-    day, 
+  const {
+    season,
+    day,
     weather, 
     timeOfDay,
     player,
     nest,
     powerups,
-    ui
+    ui,
+    toggleAudioSettings
   } = useStore();
 
   const getTimeString = () => {
@@ -145,15 +146,22 @@ export default function HUD() {
       </div>
 
       {/* Bottom right - Quick actions */}
-      <div className="hud-overlay hud-bottom-right">
-        <div>E - Interact</div>
-        <div>X/F - Attack</div>
-        <div>Q - Quests</div>
-        <div>A - Achievements</div>
-        <div>ESC - Pause</div>
-        <div>WASD - Move</div>
-        <div>Space - Jump</div>
-      </div>
+                  <div className="hud-overlay hud-bottom-right">
+                    <div>E - Interact</div>
+                    <div>X/F - Attack</div>
+                    <div>Q - Quests</div>
+                    <div>A - Achievements</div>
+                    <div>ESC - Pause</div>
+                    <div>WASD - Move</div>
+                    <div>Space - Jump</div>
+                    <button 
+                      className="audio-settings-btn"
+                      onClick={toggleAudioSettings}
+                      title="Audio Settings"
+                    >
+                      🔊
+                    </button>
+                  </div>
 
       {/* Notifications */}
       {ui.notifications.map(notification => (

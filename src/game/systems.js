@@ -4,6 +4,7 @@
  */
 
 import { useStore } from '../state/useStore';
+import audioManager from '../audio/AudioManager';
 import { 
   GRAVITY, 
   MOVE_ACCEL, 
@@ -111,6 +112,9 @@ export function updateGame(deltaTime, { input, camera, physics, time, rng, canva
     const { ui, toggleAchievements } = useStore.getState();
     toggleAchievements();
   }
+  
+  // Update audio manager
+  audioManager.updateBattle(deltaTime);
 
   // Clear just pressed states after all systems that consume input
   input.clearJustPressed();
@@ -156,6 +160,7 @@ function updatePlayerMovement(deltaTime, input, physics, player, updatePlayer, s
       vy = JUMP_VELOCITY;
       onGround = false;
       input.setCoyoteTime(0); // Consume coyote time
+      audioManager.onPlayerJump();
     }
   }
   
@@ -275,7 +280,7 @@ function checkWinLoseConditions(time, showWinLose) {
   
   // Check if player is dead
   if (player.health <= 0) {
-    showWinLose('lose');
+    showWinLose('lose', 'attack');
     return;
   }
   
@@ -289,7 +294,7 @@ function checkWinLoseConditions(time, showWinLose) {
   if (time.isWinter()) {
     const totalFood = Object.values(nest.pantry).reduce((total, count) => total + count, 0);
     if (totalFood === 0) {
-      showWinLose('lose');
+      showWinLose('lose', 'starvation');
       return;
     }
   }
@@ -340,6 +345,7 @@ function handlePickupCollisions(addToPantry, addNotification) {
       const { addToInventory } = useStore.getState();
       addToInventory(p.kind, 1);
       addNotification(`Picked ${p.kind}`, 'success', 1000);
+      audioManager.onItemPickup();
       
       // Update quest progress
       checkQuestCompletion(p.kind, 1);
@@ -585,6 +591,7 @@ function attackEnemies(player, enemies, updateEnemy, addNotification) {
         const { updateAchievementStats, checkAchievements } = useStore.getState();
         updateAchievementStats('enemiesKilled', 1);
         checkAchievements();
+        audioManager.onPlayerAttacked(); // Extend battle music
       }
     }
   });
@@ -599,10 +606,11 @@ function checkEnemyCollisions(player, enemies, updatePlayer) {
     const dx = Math.abs(player.x - enemy.x);
     const dy = Math.abs(player.y - enemy.y);
     
-    // Increased collision range for larger enemies
-    if (dx < 40 && dy < 50) {
+    // Much larger collision range for much larger enemies
+    if (dx < 60 && dy < 70) {
       const { damagePlayer } = useStore.getState();
       damagePlayer(enemy.damage);
+      audioManager.onPlayerHit();
     }
   });
 }

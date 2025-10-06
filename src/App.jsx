@@ -7,6 +7,7 @@ import WinLoseModal from './ui/WinLoseModal';
 import NestUI from './ui/NestUI';
 import QuestUI from './ui/QuestUI';
 import AchievementUI from './ui/AchievementUI';
+import AudioSettingsUI from './ui/AudioSettingsUI';
 import './index.css';
 
 function App() {
@@ -20,6 +21,7 @@ function App() {
       {ui.showNest && <NestUI />}
       {ui.showQuests && <QuestUI />}
       {ui.showAchievements && <AchievementUI />}
+      {ui.showAudioSettings && <AudioSettingsUI />}
       {ui.showWinLose && <WinLoseModal />}
     </div>
   );

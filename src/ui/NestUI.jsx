@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useStore } from '../state/useStore';
 import { UPGRADE_COSTS } from '../game/constants';
+import audioManager from '../audio/AudioManager';
 
 export default function NestUI() {
   const { nest, addToPantry, removeFromInventory, addMaterials, upgradeNest, toggleNest } = useStore();
@@ -14,8 +15,10 @@ export default function NestUI() {
         // Food items go to pantry; materials accumulate in nest.materials
         if (slot.item === 'acorn' || slot.item === 'berry') {
           addToPantry(slot.item, slot.quantity);
+          audioManager.onItemDeposit();
         } else if (slot.item === 'leaf' || slot.item === 'pine') {
           addMaterials(slot.item, slot.quantity);
+          audioManager.onItemDeposit();
         }
         removeFromInventory(slot.item, slot.quantity);
       }

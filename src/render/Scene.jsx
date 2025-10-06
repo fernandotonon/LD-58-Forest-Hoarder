@@ -9,6 +9,7 @@ import { RNG } from '../core/RNG';
 import { draw } from './draw';
 import { updateGame } from '../game/systems';
 import HUD from './HUD';
+import audioManager from '../audio/AudioManager';
 
 export default function GameScene() {
   const canvasRef = useRef(null);
@@ -18,8 +19,23 @@ export default function GameScene() {
   const physicsRef = useRef(null);
   const timeRef = useRef(null);
   const rngRef = useRef(null);
+  const { audio } = useStore();
   
   const { gameState, setGameState, togglePause } = useStore();
+  
+  // Sync audio settings when they change
+  useEffect(() => {
+    audioManager.setMasterVolume(audio.masterVolume);
+    audioManager.setMusicVolume(audio.musicVolume);
+    audioManager.setSfxVolume(audio.sfxVolume);
+  }, [audio.masterVolume, audio.musicVolume, audio.sfxVolume]);
+  
+  // Sync mute state
+  useEffect(() => {
+    if (audio.isMuted !== audioManager.isMuted) {
+      audioManager.toggleMute();
+    }
+  }, [audio.isMuted]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -37,6 +53,17 @@ export default function GameScene() {
     physicsRef.current = physics;
     timeRef.current = time;
     rngRef.current = rng;
+    
+    // Initialize audio
+    audioManager.setMasterVolume(audio.masterVolume);
+    audioManager.setMusicVolume(audio.musicVolume);
+    audioManager.setSfxVolume(audio.sfxVolume);
+    if (audio.isMuted) {
+      audioManager.toggleMute();
+    }
+    
+    // Start background music
+    audioManager.playMusic('mainTheme');
 
     // Set up time event listeners
     time.on('onDayChange', (data) => {

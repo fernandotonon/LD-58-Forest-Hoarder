@@ -95,8 +95,18 @@ const useStore = create(
         showWinLose: false,
         showQuests: false,
         showAchievements: false,
+        showAudioSettings: false,
         winLoseType: null, // 'win' or 'lose'
+        loseReason: null, // 'attack' or 'starvation'
         notifications: []
+      },
+      
+      // Audio state
+      audio: {
+        isMuted: false,
+        masterVolume: 1.0,
+        musicVolume: 0.7,
+        sfxVolume: 0.8
       },
       
       // Actions
@@ -473,16 +483,36 @@ const useStore = create(
         ui: { ...state.ui, showAchievements: !state.ui.showAchievements }
       })),
       
+      toggleAudioSettings: () => set((state) => ({
+        ui: { ...state.ui, showAudioSettings: !state.ui.showAudioSettings }
+      })),
+      
+      setMasterVolume: (volume) => set((state) => ({
+        audio: { ...state.audio, masterVolume: volume }
+      })),
+      
+      setMusicVolume: (volume) => set((state) => ({
+        audio: { ...state.audio, musicVolume: volume }
+      })),
+      
+      setSfxVolume: (volume) => set((state) => ({
+        audio: { ...state.audio, sfxVolume: volume }
+      })),
+      
+      toggleMute: () => set((state) => ({
+        audio: { ...state.audio, isMuted: !state.audio.isMuted }
+      })),
+      
       togglePause: () => set((state) => ({
         ui: { ...state.ui, showPause: !state.ui.showPause }
       })),
       
-      showWinLose: (type) => set((state) => ({
-        ui: { ...state.ui, showWinLose: true, winLoseType: type }
+      showWinLose: (type, reason = null) => set((state) => ({
+        ui: { ...state.ui, showWinLose: true, winLoseType: type, loseReason: reason }
       })),
       
       hideWinLose: () => set((state) => ({
-        ui: { ...state.ui, showWinLose: false, winLoseType: null }
+        ui: { ...state.ui, showWinLose: false, winLoseType: null, loseReason: null }
       })),
       
       addNotification: (message, type = 'info', durationMs = 1500) => {
@@ -580,8 +610,16 @@ const useStore = create(
           showWinLose: false,
           showQuests: false,
           showAchievements: false,
+          showAudioSettings: false,
           winLoseType: null,
+          loseReason: null,
           notifications: []
+        },
+        audio: {
+          isMuted: false,
+          masterVolume: 1.0,
+          musicVolume: 0.7,
+          sfxVolume: 0.8
         }
       })
     }),

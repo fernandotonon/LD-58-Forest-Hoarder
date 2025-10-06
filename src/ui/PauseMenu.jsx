@@ -1,19 +1,23 @@
 import React from 'react';
 import { useStore } from '../state/useStore';
+import audioManager from '../audio/AudioManager';
 
 export default function PauseMenu() {
   const { setGameState, togglePause } = useStore();
 
   const handleResume = () => {
+    audioManager.onButtonClick();
     togglePause();
   };
 
   const handleMainMenu = () => {
+    audioManager.onButtonClick();
     setGameState('menu');
   };
 
   const handleRestart = () => {
     if (confirm('Are you sure you want to restart? This will lose your current progress.')) {
+      audioManager.onButtonClick();
       useStore.getState().resetGame();
       setGameState('playing');
     }
