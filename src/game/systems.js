@@ -178,8 +178,8 @@ function updatePlayerMovement(deltaTime, input, physics, player, updatePlayer, s
   const groundY = 500;
   const wasOnGround = onGround;
   
-  if (y >= groundY) {
-    y = groundY;
+  if (y + PLAYER_HEIGHT/2 >= groundY) {
+    y = groundY - PLAYER_HEIGHT/2; // Position player on ground
     vy = 0;
     onGround = true;
     if (!wasOnGround) {
@@ -201,11 +201,33 @@ function updatePlayerMovement(deltaTime, input, physics, player, updatePlayer, s
     const landingY = pl.y;
     if (vy >= 0 && withinX) {
       // If feet cross the platform level this frame
-      const feetY = y;
+      const feetY = y + PLAYER_HEIGHT/2; // Use bottom of player
       if (feetY >= landingY && feetY <= landingY + 20) {
-        y = landingY;
+        y = landingY - PLAYER_HEIGHT/2; // Position player on top of platform
         vy = 0;
         onGround = true;
+      }
+    }
+  });
+
+  // Pit collision - check if player falls into pit
+  CHALLENGES.pits.forEach(pit => {
+    const withinX = (x > pit.x) && (x < pit.x + pit.width);
+    const pitY = groundY; // Pit starts at ground level
+    const pitDepth = pit.depth || 80;
+    
+    if (withinX && y + PLAYER_HEIGHT/2 >= pitY) {
+      // Player is in pit area and below ground level
+      if (y + PLAYER_HEIGHT/2 >= pitY + pitDepth) {
+        // Player fell too deep - reset to spawn or take damage
+        const { damagePlayer } = useStore.getState();
+        damagePlayer(1);
+        // Reset player position to nest area
+        x = 100;
+        y = 400;
+        vx = 0;
+        vy = 0;
+        onGround = false;
       }
     }
   });
@@ -288,7 +310,8 @@ function updateCollectibles(deltaTime, rng) {
     const toSpawn = targetCount - worldState.pickups.length;
     for (let i = 0; i < toSpawn; i++) {
       const kind = PICKUP_KINDS[Math.floor(Math.random() * PICKUP_KINDS.length)];
-      const x = 160 + Math.random() * 1200; // spread across first screens
+      // Spawn items further from the nest, across a wider area
+      const x = 200 + Math.random() * 2000; // spread across wider area
       const y = 468 + Math.random() * 8; // near ground (500 minus half sprite)
       worldState.pickups.push({ id: Date.now() + Math.random(), x, y, kind, bob: Math.random() * Math.PI * 2 });
     }
@@ -346,7 +369,8 @@ function updatePowerupSpawns(deltaTime, rng, time) {
   if (powerupWorldState.powerups.length < targetCount) {
     const toSpawn = targetCount - powerupWorldState.powerups.length;
     for (let i = 0; i < toSpawn; i++) {
-      const x = 200 + Math.random() * 1000; // spread across screens
+      // Spawn power-ups further from the nest, across a wider area
+      const x = 300 + Math.random() * 1800; // spread across wider area
       const y = 468 + Math.random() * 8; // near ground
       const powerup = spawnPowerup(x, y, time);
       if (powerup) {
@@ -400,7 +424,10 @@ function updateEnemies(deltaTime, rng, time, addEnemy, removeEnemy, updateEnemy,
     if (Math.random() < spawnRates[randomType]) {
       const enemyType = ENEMY_TYPES[randomType.toUpperCase()];
       if (enemyType) {
-        const enemy = createEnemy(enemyType, player.x + 400 + Math.random() * 200, 500);
+        // Spawn enemies much further from the nest (player starts at x=100)
+        const spawnDistance = 600 + Math.random() * 800; // 600-1400 pixels away
+        const spawnX = player.x + (Math.random() > 0.5 ? spawnDistance : -spawnDistance);
+        const enemy = createEnemy(enemyType, spawnX, 500);
         addEnemy(enemy);
       }
     }
@@ -572,7 +599,8 @@ function checkEnemyCollisions(player, enemies, updatePlayer) {
     const dx = Math.abs(player.x - enemy.x);
     const dy = Math.abs(player.y - enemy.y);
     
-    if (dx < 30 && dy < 40) {
+    // Increased collision range for larger enemies
+    if (dx < 40 && dy < 50) {
       const { damagePlayer } = useStore.getState();
       damagePlayer(enemy.damage);
     }

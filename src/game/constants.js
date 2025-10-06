@@ -379,7 +379,9 @@ export const TILE_TYPES = {
   ONE_WAY: 4,
   SPIKES: 5,
   WATER: 6,
-  NEST: 7
+  NEST: 7,
+  PLATFORM: 8,
+  PIT: 9
 };
 
 // Upgrade costs
@@ -449,9 +451,9 @@ export const DEBUG = {
 // Challenge layout (screen-space coordinates)
 export const CHALLENGES = {
   pits: [
-    // x, width (y follows ground)
-    { x: 420, width: 100 },
-    { x: 980, width: 120 },
+    // x, width, depth (y follows ground, depth makes pit deeper)
+    { x: 420, width: 100, depth: 80 },
+    { x: 980, width: 120, depth: 100 },
   ],
   spikes: [
     // x, y (baseline 560), width

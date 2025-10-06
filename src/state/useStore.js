@@ -20,7 +20,7 @@ const useStore = create(
       // Player state
       player: {
         x: 100,
-        y: 500,
+        y: 484, // 500 - 16 (half player height)
         vx: 0,
         vy: 0,
         facing: 'right',
@@ -517,7 +517,7 @@ const useStore = create(
         timeOfDay: 0,
         player: {
           x: 100,
-          y: 500,
+          y: 484, // 500 - 16 (half player height)
           vx: 0,
           vy: 0,
           facing: 'right',

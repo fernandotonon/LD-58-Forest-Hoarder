@@ -176,9 +176,10 @@ export function drawLogPlatform(ctx, rc, x, y, w=160, scale=1) {
   const img = images.tiles;
   if (img && img.width) {
     // crop a horizontal log from mid of sheet
-    const sx = Math.floor(img.width*0.34), sy = Math.floor(img.height*0.54);
-    const sw = Math.floor(img.width*0.28), sh = Math.floor(img.height*0.10);
-    ctx.drawImage(img, sx, sy, sw, sh, Math.floor(x), Math.floor(y), Math.floor(w), Math.floor(sh* (w/sw)));
+    const sx = Math.floor(img.width*0.35), sy = Math.floor(img.height*0.81);
+    const sw = Math.floor(img.width*0.28), sh = Math.floor(img.height*0.12);
+    const transparentImg = makeTransparent(img);
+    ctx.drawImage(transparentImg, sx, sy, sw, sh, Math.floor(x), Math.floor(y), Math.floor(w), Math.floor(sh* (w/sw)));
     return;
   }
   rc.rectangle(x, y, w, 16, { fill:'#b88a5a', stroke:'#5b3a1f' });
@@ -287,82 +288,122 @@ export function drawSpikes(ctx, x, y, width) {
   }
 }
 
-// Platform block
-export function drawPlatform(ctx, x, y, width) {
-  ctx.fillStyle = '#6b4f32';
-  ctx.fillRect(Math.floor(x), Math.floor(y - 12), Math.floor(width), 12);
-  ctx.strokeStyle = '#3e2a1c';
-  ctx.lineWidth = 2;
-  ctx.strokeRect(Math.floor(x), Math.floor(y - 12), Math.floor(width), 12);
+// Pit with proper depth
+export function drawPit(ctx, x, y, width, depth) {
+  const img = images.tiles;
+  if (!img || !img.width) {
+    // Fallback: simple pit
+    ctx.fillStyle = '#2c1810';
+    ctx.fillRect(Math.floor(x), Math.floor(y), Math.floor(width), depth);
+    ctx.strokeStyle = '#1a0f0a';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(Math.floor(x), Math.floor(y), Math.floor(width), depth);
+    return;
+  }
+
+  // Use pit/dark tile from tiles.png (assuming it's at position 2,0 in the tileset)
+  const tileSize = 32;
+  const sx = 2 * tileSize; // Pit tile x position
+  const sy = 0 * tileSize; // Pit tile y position
+  const sw = tileSize;
+  const sh = tileSize;
+  
+  // Draw repeating pit tiles
+  const tileCountX = Math.ceil(width / tileSize);
+  const tileCountY = Math.ceil(depth / tileSize);
+  
+  for (let ty = 0; ty < tileCountY; ty++) {
+    for (let tx = 0; tx < tileCountX; tx++) {
+      const tileX = x + tx * tileSize;
+      const tileY = y + ty * tileSize;
+      ctx.drawImage(img, sx, sy, sw, sh, tileX, tileY, tileSize, tileSize);
+    }
+  }
+}
+
+// Platform block using tiles from tiles.png
+export function drawPlatform(ctx, rc, x, y, width) {
+  const img = images.tiles;
+  if (!img || !img.width) {
+    // Fallback: simple platform
+    ctx.fillStyle = '#6b4f32';
+    ctx.fillRect(Math.floor(x), Math.floor(y - 12), Math.floor(width), 12);
+    ctx.strokeStyle = '#3e2a1c';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(Math.floor(x), Math.floor(y - 12), Math.floor(width), 12);
+    return;
+  }
+
+  drawLogPlatform(ctx, rc, x, y, width, 1);
 }
 
 // Enemy drawing
 export function drawEnemy(ctx, rc, x, y, enemy, palette) {
   const { type, health, maxHealth, state, direction } = enemy;
   
-  // Draw enemy body based on type
+  // Draw enemy body based on type (increased size)
   if (type === 'wolf') {
-    // Wolf - brown, four-legged
-    rc.ellipse(x, y, 25, 15, { 
+    // Wolf - brown, four-legged (larger)
+    rc.ellipse(x, y, 35, 20, { 
       fill: '#8B4513', 
       stroke: '#654321', 
       roughness: 1.0 
     });
     // Head
-    rc.ellipse(x + (direction > 0 ? 15 : -15), y - 5, 12, 10, { 
+    rc.ellipse(x + (direction > 0 ? 20 : -20), y - 8, 16, 14, { 
       fill: '#8B4513', 
       stroke: '#654321', 
       roughness: 1.0 
     });
     // Legs
     for (let i = 0; i < 4; i++) {
-      const legX = x + (i < 2 ? -8 : 8) + (i % 2) * 4;
-      rc.rectangle(legX, y + 8, 3, 8, { 
+      const legX = x + (i < 2 ? -12 : 12) + (i % 2) * 6;
+      rc.rectangle(legX, y + 12, 4, 12, { 
         fill: '#654321', 
         stroke: '#3e2a1c' 
       });
     }
   } else if (type === 'bear') {
-    // Bear - larger, darker
-    rc.ellipse(x, y, 35, 20, { 
+    // Bear - larger, darker (even bigger)
+    rc.ellipse(x, y, 45, 28, { 
       fill: '#654321', 
       stroke: '#3e2a1c', 
       roughness: 1.2 
     });
     // Head
-    rc.ellipse(x + (direction > 0 ? 20 : -20), y - 8, 15, 12, { 
+    rc.ellipse(x + (direction > 0 ? 25 : -25), y - 12, 20, 16, { 
       fill: '#654321', 
       stroke: '#3e2a1c', 
       roughness: 1.2 
     });
     // Legs
     for (let i = 0; i < 4; i++) {
-      const legX = x + (i < 2 ? -12 : 12) + (i % 2) * 6;
-      rc.rectangle(legX, y + 12, 5, 10, { 
+      const legX = x + (i < 2 ? -16 : 16) + (i % 2) * 8;
+      rc.rectangle(legX, y + 16, 6, 14, { 
         fill: '#3e2a1c', 
         stroke: '#2c1810' 
       });
     }
   } else if (type === 'hawk') {
-    // Hawk - flying, wings spread
-    rc.ellipse(x, y, 20, 8, { 
+    // Hawk - flying, wings spread (larger)
+    rc.ellipse(x, y, 28, 12, { 
       fill: '#8B4513', 
       stroke: '#654321', 
       roughness: 0.8 
     });
     // Wings
-    rc.ellipse(x - 15, y - 3, 12, 6, { 
+    rc.ellipse(x - 20, y - 5, 16, 8, { 
       fill: '#654321', 
       stroke: '#3e2a1c', 
       roughness: 0.8 
     });
-    rc.ellipse(x + 15, y - 3, 12, 6, { 
+    rc.ellipse(x + 20, y - 5, 16, 8, { 
       fill: '#654321', 
       stroke: '#3e2a1c', 
       roughness: 0.8 
     });
     // Head
-    rc.ellipse(x + (direction > 0 ? 12 : -12), y - 2, 8, 6, { 
+    rc.ellipse(x + (direction > 0 ? 16 : -16), y - 3, 12, 8, { 
       fill: '#8B4513', 
       stroke: '#654321', 
       roughness: 0.8 

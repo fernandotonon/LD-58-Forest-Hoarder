@@ -6,7 +6,7 @@
 import rough from 'roughjs';
 import { whenImagesReady } from './assets';
 import { SEASONAL_PALETTES, TILE_SIZE } from '../game/constants';
-import { drawSquirrel, drawTree, drawCollectible, drawBackground, drawNest, drawGround, drawSpikes, drawPlatform, drawEnemy, drawPowerup } from './sprites';
+import { drawSquirrel, drawTree, drawCollectible, drawBackground, drawNest, drawGround, drawSpikes, drawPlatform, drawPit, drawEnemy, drawPowerup } from './sprites';
 import { CHALLENGES } from '../game/constants';
 import { getWorldPickups, getWorldPowerups } from '../game/systems';
 import { useStore } from '../state/useStore';
@@ -66,11 +66,11 @@ function drawWorld(ctx, rc, camera, time, palette, canvas) {
   // Draw tiled ground from tilesheet
   drawGround(ctx, groundY, camera.x, canvas.width, 0.6);
 
-  // Pits: simply skip ground in pit spans by overdrawing clear rects
-  ctx.clearRect(0,0,0,0); // noop ensures ctx available
+  // Pits: draw proper pits with depth
   CHALLENGES.pits.forEach(p => {
     const sx = Math.floor(p.x - camera.x);
-    ctx.clearRect(sx, groundY - 24, p.width, 48);
+    const sy = groundY - camera.y;
+    drawPit(ctx, sx, sy, p.width, p.depth || 80);
   });
 
   // Spikes
@@ -80,7 +80,7 @@ function drawWorld(ctx, rc, camera, time, palette, canvas) {
 
   // Static platforms
   CHALLENGES.platforms.forEach(pl => {
-    drawPlatform(ctx, Math.floor(pl.x - camera.x), pl.y - camera.y, pl.width);
+    drawPlatform(ctx, rc, Math.floor(pl.x - camera.x), pl.y - camera.y, pl.width);
   });
 
   // Trees: tile across world relative to camera
