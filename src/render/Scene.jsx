@@ -67,11 +67,11 @@ export default function GameScene() {
 
     // Set up time event listeners
     time.on('onDayChange', (data) => {
-      console.log(`Day ${data.day} of ${data.season}`);
+      // Day changed
     });
     
     time.on('onSeasonChange', (data) => {
-      console.log(`Season changed to ${data.season}`);
+      // Season changed
     });
 
     // Game update function

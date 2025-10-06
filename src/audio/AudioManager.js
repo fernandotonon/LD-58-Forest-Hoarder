@@ -64,45 +64,39 @@ class AudioManager {
 
   updateMusicVolumes() {
     Object.values(this.music).forEach(track => {
-      track.volume = this.musicVolume * this.masterVolume;
+      track.volume = this.isMuted ? 0 : this.musicVolume * this.masterVolume;
     });
   }
 
   updateSfxVolumes() {
     Object.values(this.sounds).forEach(sound => {
-      sound.volume = this.sfxVolume * this.masterVolume;
+      sound.volume = this.isMuted ? 0 : this.sfxVolume * this.masterVolume;
     });
   }
 
   toggleMute() {
     this.isMuted = !this.isMuted;
-    if (this.isMuted) {
-      this.pauseAllMusic();
-    } else {
-      this.resumeMusic();
-    }
+    this.updateAllVolumes();
     return this.isMuted;
   }
 
   playSound(soundName) {
-    if (this.isMuted || !this.sounds[soundName]) return;
+    if (!this.sounds[soundName]) return;
     
     try {
       // Reset and play sound
       this.sounds[soundName].currentTime = 0;
       this.sounds[soundName].play().catch(e => {
-        console.log('Audio play failed:', e);
+        // Audio play failed silently
       });
     } catch (error) {
-      console.log('Error playing sound:', error);
+      // Error playing sound silently
     }
   }
 
   startBattle() {
     this.battleMode = true;
     this.battleTimer = this.battleDuration;
-    
-    if (this.isMuted) return;
     
     // Fade out main theme and start battle music
     this.fadeOutMusic(this.music.mainTheme, () => {
@@ -127,8 +121,6 @@ class AudioManager {
     this.battleMode = false;
     this.battleTimer = 0;
     
-    if (this.isMuted) return;
-    
     // Fade out battle music and resume main theme
     this.fadeOutMusic(this.music.battleSong, () => {
       this.playMusic('mainTheme');
@@ -136,7 +128,7 @@ class AudioManager {
   }
 
   playMusic(trackName) {
-    if (this.isMuted || !this.music[trackName]) return;
+    if (!this.music[trackName]) return;
     
     // Stop all other music
     Object.values(this.music).forEach(track => {
@@ -146,7 +138,7 @@ class AudioManager {
     
     // Play the requested track
     this.music[trackName].play().catch(e => {
-      console.log('Music play failed:', e);
+      // Music play failed silently
     });
   }
 
@@ -171,11 +163,12 @@ class AudioManager {
     }
     
     const fadeInterval = setInterval(() => {
+      const currentVolume = this.isMuted ? 0 : this.musicVolume * this.masterVolume;
       track.volume = Math.max(0, track.volume - 0.1);
       if (track.volume <= 0) {
         track.pause();
         track.currentTime = 0;
-        track.volume = this.musicVolume * this.masterVolume; // Reset volume
+        track.volume = currentVolume; // Reset volume based on current settings
         clearInterval(fadeInterval);
         callback();
       }

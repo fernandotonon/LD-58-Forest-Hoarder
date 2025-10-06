@@ -662,37 +662,33 @@ canvas {
   color: #ecf0f1;
 }
 
-.test-sound-button {
-  background: linear-gradient(135deg, #3498db, #2980b9);
-  border: none;
-  color: white;
-  padding: 10px 20px;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 14px;
-  font-weight: bold;
-  transition: all 0.3s ease;
-  align-self: center;
-}
-
-.test-sound-button:hover {
-  background: linear-gradient(135deg, #2980b9, #1f4e79);
-  transform: translateY(-1px);
-}
 
 .audio-settings-btn {
-  background: rgba(52, 73, 94, 0.8);
-  border: 1px solid #7f8c8d;
+  background: rgba(52, 73, 94, 0.9);
+  border: 2px solid #7f8c8d;
   color: #ecf0f1;
-  padding: 4px 8px;
-  border-radius: 4px;
+  padding: 6px 10px;
+  border-radius: 6px;
   cursor: pointer;
-  font-size: 12px;
-  margin-top: 4px;
+  font-size: 14px;
+  margin-top: 8px;
   transition: all 0.3s ease;
+  z-index: 1000;
+  position: relative;
+  min-width: 40px;
+  min-height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: auto;
 }
 
 .audio-settings-btn:hover {
-  background: rgba(52, 152, 219, 0.8);
+  background: rgba(52, 152, 219, 0.9);
   border-color: #3498db;
+  transform: scale(1.05);
+}
+
+.audio-settings-btn:active {
+  transform: scale(0.95);
 }

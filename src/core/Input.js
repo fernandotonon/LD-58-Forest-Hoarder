@@ -142,7 +142,7 @@ export class Input {
   }
 
   isAchievementPressed() {
-    return this.isJustPressed('KeyA');
+    return this.isJustPressed('KeyZ');
   }
 
   // Clear just pressed/released states after processing

@@ -23,7 +23,6 @@ export function saveGame() {
     };
     
     localStorage.setItem(SAVE_KEY, JSON.stringify(saveData));
-    console.log('Game saved successfully');
     return true;
   } catch (error) {
     console.error('Failed to save game:', error);
@@ -35,7 +34,6 @@ export function loadGame() {
   try {
     const saveData = localStorage.getItem(SAVE_KEY);
     if (!saveData) {
-      console.log('No save data found');
       return false;
     }
     
@@ -57,7 +55,6 @@ export function loadGame() {
     updatePlayer(data.player);
     setNest(data.nest);
     
-    console.log('Game loaded successfully');
     return true;
   } catch (error) {
     console.error('Failed to load game:', error);
@@ -77,7 +74,6 @@ export function hasSaveData() {
 export function deleteSave() {
   try {
     localStorage.removeItem(SAVE_KEY);
-    console.log('Save data deleted');
     return true;
   } catch (error) {
     console.error('Failed to delete save data:', error);

@@ -35,22 +35,12 @@ export default function AudioSettingsUI() {
     audioManager.toggleMute();
   };
 
-  const handleTestSound = () => {
-    audioManager.playSound('mouseClick');
-  };
 
   return (
     <div className="modal">
       <div className="modal-content">
         <div className="modal-header">
           <h2>🔊 Audio Settings</h2>
-          <button 
-            className="close-button" 
-            onClick={toggleAudioSettings}
-            aria-label="Close"
-          >
-            ×
-          </button>
         </div>
         
         <div className="audio-settings">
@@ -124,14 +114,6 @@ export default function AudioSettingsUI() {
             />
           </div>
 
-          <div className="audio-control">
-            <button 
-              className="test-sound-button"
-              onClick={handleTestSound}
-            >
-              🔊 Test Sound
-            </button>
-          </div>
         </div>
 
         <div className="modal-buttons">

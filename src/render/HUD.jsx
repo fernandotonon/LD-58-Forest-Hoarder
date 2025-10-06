@@ -14,6 +14,7 @@ export default function HUD() {
     ui,
     toggleAudioSettings
   } = useStore();
+  
 
   const getTimeString = () => {
     const hours = Math.floor(timeOfDay * 24);
@@ -146,22 +147,39 @@ export default function HUD() {
       </div>
 
       {/* Bottom right - Quick actions */}
-                  <div className="hud-overlay hud-bottom-right">
-                    <div>E - Interact</div>
-                    <div>X/F - Attack</div>
-                    <div>Q - Quests</div>
-                    <div>A - Achievements</div>
-                    <div>ESC - Pause</div>
-                    <div>WASD - Move</div>
-                    <div>Space - Jump</div>
-                    <button 
-                      className="audio-settings-btn"
-                      onClick={toggleAudioSettings}
-                      title="Audio Settings"
-                    >
-                      🔊
-                    </button>
-                  </div>
+      <div className="hud-overlay hud-bottom-right">
+        <div>E - Interact</div>
+        <div>X/F - Attack</div>
+        <div>Q - Quests</div>
+        <div>Z - Achievements</div>
+        <div>ESC - Pause</div>
+        <div>WASD - Move</div>
+        <div>Space - Jump</div>
+      </div>
+      
+      {/* Audio Settings Button - Outside HUD overlay */}
+      <div style={{ 
+        position: 'absolute', 
+        bottom: '10px', 
+        right: '10px', 
+        zIndex: 1000,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        gap: '4px'
+      }}>
+        <button 
+          className="audio-settings-btn"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            toggleAudioSettings();
+          }}
+          title="Audio Settings"
+        >
+          🔊
+        </button>
+      </div>
 
       {/* Notifications */}
       {ui.notifications.map(notification => (

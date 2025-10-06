@@ -631,7 +631,8 @@ const useStore = create(
         weather: state.weather,
         player: state.player,
         nest: state.nest,
-        world: state.world
+        world: state.world,
+        audio: state.audio
       })
     }
   )
